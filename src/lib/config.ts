@@ -1,9 +1,16 @@
 import fs from "fs";
 import path from "path";
 
+export interface CheckoutLink {
+  id: string;
+  name: string;
+  url: string;
+  isActive: boolean;
+}
+
 export interface AppConfig {
   price: string;
-  checkoutLink: string;
+  checkoutLinks: CheckoutLink[];
   scripts: string[];
 }
 
@@ -12,15 +19,26 @@ const configPath = path.join(process.cwd(), "src", "data", "config.json");
 export function getConfig(): AppConfig {
   try {
     if (fs.existsSync(configPath)) {
-      const data = fs.readFileSync(configPath, "utf-8");
-      return JSON.parse(data) as AppConfig;
+      const data = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      
+      // Backward compatibility: Convert single checkoutLink to checkoutLinks array
+      let checkoutLinks = data.checkoutLinks || [];
+      if (checkoutLinks.length === 0 && data.checkoutLink) {
+        checkoutLinks = [{ id: "default", name: "Link Padrão", url: data.checkoutLink, isActive: true }];
+      }
+
+      return {
+        price: data.price || "117",
+        checkoutLinks: checkoutLinks,
+        scripts: data.scripts || [],
+      };
     }
   } catch (err) {
     console.error("Error reading config:", err);
   }
   return {
     price: "117",
-    checkoutLink: "",
+    checkoutLinks: [],
     scripts: [],
   };
 }

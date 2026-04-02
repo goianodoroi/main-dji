@@ -14,7 +14,10 @@ export default function Home() {
     <main style={{ background: "#0a0a0a" }}>
       <Hero price={config.price} />
       <BentoGrid />
-      <ProductBuy price={config.price} checkoutLink={config.checkoutLink} />
+      <ProductBuy 
+        price={config.price} 
+        checkoutLink={config.checkoutLinks.find(l => l.isActive)?.url || ""} 
+      />
       <InTheBox />
       <FAQ />
       <Footer />

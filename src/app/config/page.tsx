@@ -11,14 +11,14 @@ export default function ConfigPage() {
   const [saving, setSaving] = useState(false);
 
   const [price, setPrice] = useState("");
-  const [checkoutLink, setCheckoutLink] = useState("");
+  const [checkoutLinks, setCheckoutLinks] = useState<{id: string, name: string, url: string, isActive: boolean}[]>([]);
   const [scripts, setScripts] = useState<string[]>([]);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   useEffect(() => {
-    getConfigAction().then((data) => {
+    getConfigAction().then((data: any) => {
       setPrice(data.price);
-      setCheckoutLink(data.checkoutLink);
+      setCheckoutLinks(data.checkoutLinks || []);
       setScripts(data.scripts || []);
       setLoading(false);
     });
@@ -37,7 +37,7 @@ export default function ConfigPage() {
   const handleSave = async () => {
     setSaving(true);
     setMessage({ type: "", text: "" });
-    const res = await updateConfigAction(password, { price, checkoutLink, scripts });
+    const res = await updateConfigAction(password, { price, checkoutLinks, scripts } as any);
     setSaving(false);
 
     if (res.success) {
@@ -55,6 +55,40 @@ export default function ConfigPage() {
   };
   const removeScript = (index: number) => {
     setScripts(scripts.filter((_, i) => i !== index));
+  };
+
+  const addCheckoutLink = () => {
+    const newLinks = [...checkoutLinks];
+    const isFirst = newLinks.length === 0;
+    newLinks.push({
+      id: Date.now().toString(),
+      name: `Link ${newLinks.length + 1}`,
+      url: "",
+      isActive: isFirst
+    });
+    setCheckoutLinks(newLinks);
+  };
+
+  const updateCheckoutLink = (index: number, field: 'name' | 'url', value: string) => {
+    const newLinks = [...checkoutLinks];
+    newLinks[index][field] = value;
+    setCheckoutLinks(newLinks);
+  };
+
+  const removeCheckoutLink = (index: number) => {
+    let newLinks = checkoutLinks.filter((_, i) => i !== index);
+    if (newLinks.length > 0 && !newLinks.some(l => l.isActive)) {
+      newLinks[0].isActive = true;
+    }
+    setCheckoutLinks(newLinks);
+  };
+
+  const setActiveLink = (index: number) => {
+    const newLinks = checkoutLinks.map((link, i) => ({
+      ...link,
+      isActive: i === index
+    }));
+    setCheckoutLinks(newLinks);
   };
 
   if (loading) {
@@ -260,16 +294,67 @@ export default function ConfigPage() {
                   placeholder="Ex: 87.00"
                 />
               </div>
-              <div className="admin-col">
-                <label style={{ fontSize: "14px", fontWeight: "500" }}>Link de Checkout</label>
-                <input
-                  type="text"
-                  value={checkoutLink}
-                  onChange={(e) => setCheckoutLink(e.target.value)}
-                  className="admin-input"
-                  placeholder="https://..."
-                />
-              </div>
+            </div>
+          </div>
+
+          <div className="admin-section">
+            <div className="admin-header-flex">
+              <h2 style={{ fontSize: "18px", fontWeight: "600", margin: 0 }}>
+                Links de Checkout
+              </h2>
+              <button type="button" onClick={addCheckoutLink} className="admin-btn admin-btn-secondary">
+                + Adicionar Link
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {checkoutLinks.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "30px 0", color: "#94a3b8", fontSize: "14px", background: "#f8fafc", borderRadius: "8px", border: "1px dashed #cbd5e1" }}>
+                  Nenhum link adicionado.
+                </div>
+              ) : (
+                checkoutLinks.map((link, index) => (
+                  <div key={link.id} style={{ display: "flex", gap: "16px", alignItems: "center", background: "#f8fafc", padding: "16px", borderRadius: "8px", border: link.isActive ? "2px solid #3b82f6" : "1px solid #e2e8f0", transition: "all 0.2s ease" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <input 
+                        type="radio" 
+                        name="activeCheckoutLink" 
+                        checked={link.isActive} 
+                        onChange={() => setActiveLink(index)} 
+                        title="Marcar como ativo"
+                        style={{ width: "22px", height: "22px", cursor: "pointer", accentColor: "#3b82f6" }}
+                      />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1 }}>
+                      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                        <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>NOME DO LINK</span>
+                        {link.isActive && <span style={{ background: "#dbeafe", color: "#1d4ed8", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: "600" }}>ATIVO</span>}
+                      </div>
+                      <input
+                        type="text"
+                        value={link.name}
+                        onChange={(e) => updateCheckoutLink(index, 'name', e.target.value)}
+                        className="admin-input"
+                        placeholder="Ex: Checkout Reserva"
+                      />
+                      <input
+                        type="text"
+                        value={link.url}
+                        onChange={(e) => updateCheckoutLink(index, 'url', e.target.value)}
+                        className="admin-input"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", alignSelf: "stretch" }}>
+                      <button type="button" onClick={() => removeCheckoutLink(index)} className="admin-btn admin-btn-danger" style={{ padding: "8px", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
