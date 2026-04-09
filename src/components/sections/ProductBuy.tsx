@@ -257,14 +257,14 @@ export default function ProductBuy({ price = "117", checkoutLink = "#" }: { pric
                     color: T.text3, textDecoration: "line-through",
                     display: "block", marginBottom: "4px",
                   }}>
-                    USD $629
+                    $629
                   </span>
                   <span style={{
                     fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                     fontWeight: 500, fontSize: "42px",
                     letterSpacing: "-0.03em", lineHeight: 1, color: T.text1,
                   }}>
-                    USD ${" "}
+                    ${" "}
                     <span style={{
                       color: T.text1,
                     }}>
