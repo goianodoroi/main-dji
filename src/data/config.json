@@ -1,5 +1,17 @@
 {
-  "price": "117",
-  "checkoutLink": "",
+  "products": [
+    {
+      "id": "combo",
+      "price": "137",
+      "oldPrice": "1178.99",
+      "checkoutLinks": []
+    },
+    {
+      "id": "pocket3",
+      "price": "107",
+      "oldPrice": "629",
+      "checkoutLinks": []
+    }
+  ],
   "scripts": []
 }
