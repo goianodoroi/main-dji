@@ -23,16 +23,16 @@ export interface AppConfig {
 const configPath = path.join(process.cwd(), "src", "data", "config.json");
 
 export function getConfig(): AppConfig {
+  const defaultCombo: ProductConfig = {
+    id: "combo",
+    price: "450",
+    oldPrice: "1178.99",
+    checkoutLinks: []
+  };
   const defaultPocket3: ProductConfig = {
     id: "pocket3",
     price: "117",
     oldPrice: "629",
-    checkoutLinks: []
-  };
-  const defaultOsmo360: ProductConfig = {
-    id: "osmo360",
-    price: "401.49",
-    oldPrice: "549.99",
     checkoutLinks: []
   };
 
@@ -49,23 +49,21 @@ export function getConfig(): AppConfig {
           checkoutLinks = [{ id: "default", name: "Link Padrão", url: data.checkoutLink, isActive: true }];
         }
         products = [
+          { ...defaultCombo },
           {
             id: "pocket3",
             price: data.price || "117",
             oldPrice: "629",
             checkoutLinks: checkoutLinks
-          },
-          {
-            ...defaultOsmo360
           }
         ];
       }
 
+      const combo = products.find((p: ProductConfig) => p.id === "combo") || defaultCombo;
       const pocket3 = products.find((p: ProductConfig) => p.id === "pocket3") || defaultPocket3;
-      const osmo360 = products.find((p: ProductConfig) => p.id === "osmo360") || defaultOsmo360;
 
       return {
-        products: [pocket3, osmo360],
+        products: [combo, pocket3],
         scripts: data.scripts || [],
       };
     }
@@ -73,7 +71,7 @@ export function getConfig(): AppConfig {
     console.error("Error reading config:", err);
   }
   return {
-    products: [defaultPocket3, defaultOsmo360],
+    products: [defaultCombo, defaultPocket3],
     scripts: [],
   };
 }

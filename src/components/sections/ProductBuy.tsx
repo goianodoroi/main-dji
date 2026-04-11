@@ -4,10 +4,32 @@ import Image from "next/image";
 import type { ProductConfig } from "@/lib/config";
 
 const PRODUCT_DATA: Record<string, any> = {
+  combo: {
+    title: "Double Creator Combo\nPocket 3 + Osmo 360",
+    desc: "The Ultimate DJI Recording Kit. Includes the Osmo Pocket 3 with 1-inch sensor AND the new Osmo 360. Maximum creativity and coverage.",
+    images: [
+      "https://se-cdn.djiits.com/tpc/uploads/carousel/image/8f026266bc7f7a9fe1f2f79591874606@ultra.jpg",
+      "/images/osmo360/1.webp",
+      "https://se-cdn.djiits.com/tpc/uploads/carousel/image/48272e295eebee2fc16ff15a663594df@ultra.jpg?format=webp",
+      "/images/osmo360/3.webp",
+      "https://se-cdn.djiits.com/tpc/uploads/carousel/image/8e1522eae916ca88631f0d48a88a2c7a@ultra.jpg?format=webp"
+    ],
+    specs: [
+      { label: "Sensors",       value: "1-inch / 1-Inch 360°" },
+      { label: "Pocket Video",  value: "4K / 120 fps" },
+      { label: "360° Video",    value: "Native 8K 360°" },
+      { label: "Photo",         value: "up to 120MP 360°" },
+      { label: "Stabilization", value: "Mechanical & Digital" },
+      { label: "Audio",         value: "Dual DJI Mics & OsmoAudio" }
+    ],
+    includes: [
+      "Osmo Pocket 3", "Osmo 360", "DJI Mic 2", "Battery Handle", "Extreme Battery Plus", 
+      "Mini Tripod", "Protective Pouches", "Wide-Angle Lens", "Lens Protectors"
+    ]
+  },
   pocket3: {
     title: "Osmo Pocket 3\nCreator Combo",
     desc: "1-inch sensor, 4K/120fps, 3-axis mechanical stabilization, and DJI Mic 2 included — the most complete camera that fits in your pocket.",
-    discount: "−81%",
     images: [
       "https://se-cdn.djiits.com/tpc/uploads/carousel/image/8f026266bc7f7a9fe1f2f79591874606@ultra.jpg",
       "https://se-cdn.djiits.com/tpc/uploads/carousel/image/48272e295eebee2fc16ff15a663594df@ultra.jpg?format=webp",
@@ -31,38 +53,22 @@ const PRODUCT_DATA: Record<string, any> = {
       "Osmo Pocket 3", "DJI Mic 2", "Battery Handle",
       "Mini Tripod", "Carrying Bag", "Wide-Angle Lens",
     ]
-  },
-  osmo360: {
-    title: "Osmo 360\nStandard Combo",
-    desc: "1-Inch 360° Imaging, Native 8K Video & Exceptional Low-Light Performance, 4K/120fps Boost Video.",
-    discount: "−27%",
-    images: [
-      "/images/osmo360/1.webp",
-      "/images/osmo360/2.webp",
-      "/images/osmo360/3.webp",
-      "/images/osmo360/4.webp",
-      "/images/osmo360/5.webp",
-    ],
-    specs: [
-      { label: "Sensor",        value: "1-Inch 360° CMOS" },
-      { label: "Video",         value: "Native 8K 360° / 4K 120fps" },
-      { label: "Lens",          value: "170° Boost Video" },
-      { label: "Photo",         value: "120MP 360° Photo" },
-      { label: "Battery",       value: "100-Min 8K/30fps" },
-      { label: "Color",         value: "10-bit & D-Log M" },
-      { label: "Audio",         value: "OsmoAudio™ Direct Mic" },
-      { label: "Ecosystem",     value: "Magnetic Quick-Release" },
-    ],
-    includes: [
-      "Osmo 360", "Extreme Battery Plus", "Camera Pouch",
-      "Lens Protector", "Type-C Cable", "Lens Cloth"
-    ]
   }
 };
 
-/* ─── Linear interpolation ─── */
+/* ─── Utils ─── */
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * Math.max(0, Math.min(1, t));
+}
+
+function calculateDiscount(price: string, oldPrice: string) {
+  const p = parseFloat(price);
+  const op = parseFloat(oldPrice);
+  if (!isNaN(p) && !isNaN(op) && op > 0 && op > p) {
+    const diff = ((op - p) / op) * 100;
+    return `−${Math.round(diff)}%`;
+  }
+  return "";
 }
 
 function theme(p: number) {
@@ -125,8 +131,8 @@ export default function ProductBuy({ products = [] }: { products?: ProductConfig
 
   const T = theme(progress);
 
-  const pocket3Config = products?.find(p => p.id === "pocket3") || { price: "117", oldPrice: "629", checkoutLinks: [] };
-  const osmo360Config = products?.find(p => p.id === "osmo360") || { price: "401.49", oldPrice: "549.99", checkoutLinks: [] };
+  const comboConfig = products?.find(p => p.id === "combo") || { id: "combo", price: "450", oldPrice: "1178.99", checkoutLinks: [] };
+  const pocket3Config = products?.find(p => p.id === "pocket3") || { id: "pocket3", price: "117", oldPrice: "629", checkoutLinks: [] };
 
   return (
     <section ref={sectionRef} id="comprar" className="product-buy-section" style={{ background: T.bg }}>
@@ -151,14 +157,15 @@ export default function ProductBuy({ products = [] }: { products?: ProductConfig
       <div className="product-buy-container">
         <div className="product-buy-grid">
           <ProductCard 
-            config={pocket3Config as ProductConfig}
-            data={PRODUCT_DATA.pocket3}
+            config={comboConfig as ProductConfig}
+            data={PRODUCT_DATA.combo}
             T={T}
             progress={progress}
+            isHighlighted={true}
           />
           <ProductCard 
-            config={osmo360Config as ProductConfig}
-            data={PRODUCT_DATA.osmo360}
+            config={pocket3Config as ProductConfig}
+            data={PRODUCT_DATA.pocket3}
             T={T}
             progress={progress}
           />
@@ -168,9 +175,10 @@ export default function ProductBuy({ products = [] }: { products?: ProductConfig
   );
 }
 
-function ProductCard({ config, data, T, progress }: { config: ProductConfig, data: any, T: any, progress: number }) {
+function ProductCard({ config, data, T, progress, isHighlighted }: { config: ProductConfig, data: any, T: any, progress: number, isHighlighted?: boolean }) {
   const [active, setActive] = useState(0);
   const checkoutLink = config.checkoutLinks?.find(l => l.isActive)?.url || "#";
+  const discountStr = calculateDiscount(config.price, config.oldPrice);
 
   useEffect(() => {
     const id = setInterval(() => setActive(i => (i + 1) % data.images.length), 3800);
@@ -178,9 +186,19 @@ function ProductCard({ config, data, T, progress }: { config: ProductConfig, dat
   }, [data.images.length]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "32px", width: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "32px", width: "100%", position: "relative" }}>
+      {isHighlighted && (
+        <div style={{
+          position: "absolute", top: "-32px", left: "0", right: "0", textAlign: "center",
+          background: "linear-gradient(90deg, #E05D26, #FF9A5A)", color: "#fff",
+          padding: "6px 0", borderRadius: "12px 12px 0 0",
+          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontWeight: 600, fontSize: "12px", letterSpacing: "1px", textTransform: "uppercase"
+        }}>
+          BEST VALUE
+        </div>
+      )}
       {/* ══ Imagens ══ */}
-      <div className="product-image-container">
+      <div className="product-image-container" style={{ borderTopRadius: isHighlighted ? "0" : "16px" }}>
         {/* Main image */}
         <div style={{
           position: "relative", width: "100%", aspectRatio: "1/1",
@@ -188,9 +206,11 @@ function ProductCard({ config, data, T, progress }: { config: ProductConfig, dat
           background: T.surface,
           border: `1px solid ${T.border}`,
           marginBottom: "12px",
+          borderTopLeftRadius: isHighlighted ? "0" : "16px",
+          borderTopRightRadius: isHighlighted ? "0" : "16px",
         }}>
           {data.images.map((src: string, i: number) => (
-            <div key={src} style={{
+            <div key={`${src}-${i}`} style={{
               position: "absolute", inset: 0,
               opacity:   active === i ? 1 : 0,
               transform: active === i ? "scale(1)" : "scale(1.03)",
@@ -266,7 +286,7 @@ function ProductCard({ config, data, T, progress }: { config: ProductConfig, dat
                 fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontWeight: 400, fontSize: "13px",
                 color: T.text3, textDecoration: "line-through", display: "block", marginBottom: "4px",
               }}>
-                ${config.oldPrice || (data.discount === "−81%" ? "629" : "549.99")}
+                ${config.oldPrice || (config.id === "pocket3" ? "629" : "1178.99")}
               </span>
               <span style={{
                 fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontWeight: 500, fontSize: "42px",
@@ -276,13 +296,15 @@ function ProductCard({ config, data, T, progress }: { config: ProductConfig, dat
               </span>
             </div>
 
-            <span style={{
-              fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontWeight: 500, fontSize: "12px",
-              color: T.orangeHi, padding: "4px 10px", borderRadius: "999px",
-              border: "1px solid rgba(255,208,146,0.22)", background: "rgba(255,208,146,0.07)",
-            }}>
-              {data.discount}
-            </span>
+            {discountStr && (
+              <span style={{
+                fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif', fontWeight: 500, fontSize: "12px",
+                color: T.orangeHi, padding: "4px 10px", borderRadius: "999px",
+                border: "1px solid rgba(255,208,146,0.22)", background: "rgba(255,208,146,0.07)",
+              }}>
+                {discountStr}
+              </span>
+            )}
           </div>
 
           <p style={{

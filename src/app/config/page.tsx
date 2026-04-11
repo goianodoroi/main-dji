@@ -300,7 +300,7 @@ export default function ConfigPage() {
           {products.map((product, pIdx) => (
             <div key={product.id} className="admin-section" style={{ borderTop: "4px solid #1e293b" }}>
               <h2 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "20px", color: "#0f172a" }}>
-                Detalhes do Produto: <span style={{ color: "#3b82f6" }}>{product.id === "pocket3" ? "Osmo Pocket 3" : "Osmo 360"}</span>
+                Detalhes do Produto: <span style={{ color: "#3b82f6" }}>{product.id === "combo" ? "Ultimate Combo (Pocket 3 + Osmo 360)" : "Osmo Pocket 3"}</span>
               </h2>
               <div className="admin-row">
                 <div className="admin-col">
