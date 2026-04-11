@@ -198,7 +198,7 @@ function ProductCard({ config, data, T, progress, isHighlighted }: { config: Pro
         </div>
       )}
       {/* ══ Imagens ══ */}
-      <div className="product-image-container" style={{ borderTopRadius: isHighlighted ? "0" : "16px" }}>
+      <div className="product-image-container" style={{ borderTopLeftRadius: isHighlighted ? "0" : "16px", borderTopRightRadius: isHighlighted ? "0" : "16px" }}>
         {/* Main image */}
         <div style={{
           position: "relative", width: "100%", aspectRatio: "1/1",
