@@ -303,7 +303,7 @@ function BentoCard({
         responsive: false,
         techOrder: ["html5"],
         sources: [
-          { src: cfHLS(card.videoId), type: "application/x-mpegURL" },
+          { src: cfHLS(card.videoId!), type: "application/x-mpegURL" },
         ],
       });
 
