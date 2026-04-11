@@ -51,6 +51,33 @@ const CARDS = [
     area: "c5",
     gradient: false,
   },
+  {
+    id: "06",
+    videoUrl: "https://www.djiusa.com/cdn/shop/videos/c/vp/92e174fd528248a0b7aa002d9d1d411e/92e174fd528248a0b7aa002d9d1d411e.HD-1080p-4.8Mbps-58384209.mp4?v=0",
+    tag: "Osmo 360",
+    title: "1-Inch 360°\nImaging",
+    body: "Specially designed for 360° capture, the all-new square HDR image sensor maintains the same 360° image field as a traditional 1-inch sensor.",
+    area: "c1",
+    gradient: true,
+  },
+  {
+    id: "07",
+    videoUrl: "https://www.djiusa.com/cdn/shop/videos/c/vp/c7a8da94dd7d4e09944a9dcd8008a98c/c7a8da94dd7d4e09944a9dcd8008a98c.HD-720p-3.0Mbps-58384204.mp4?v=0",
+    tag: "Low-Light",
+    title: "Native 8K &\nSuperb Low-Light",
+    body: "DJI's first camera to offer native 8K 360° video. 13.5 stops of dynamic range, capturing sharp, vibrant footage—even in high-contrast scenes.",
+    area: "c2",
+    gradient: false,
+  },
+  {
+    id: "08",
+    videoUrl: "https://www.djiusa.com/cdn/shop/videos/c/vp/fd5b830570304945a90b2257a709b541/fd5b830570304945a90b2257a709b541.HD-720p-3.0Mbps-58384205.mp4?v=0",
+    tag: "Boost Video",
+    title: "4K/120fps &\n170° Boost Video",
+    body: "In single-lens mode, switch to Boost Video mode for a 170° field of view and buttery-smooth 4K/120fps footage.",
+    area: "c3",
+    gradient: false,
+  },
 ] as const;
 
 
@@ -216,11 +243,11 @@ export default function BentoGrid() {
         style={{ width: "100%", margin: "0 auto" }}
       >
         {CARDS.map((card, i) => (
-          <BentoCard key={card.id} card={card} delay={i * 80} />
+          <BentoCard key={card.id} card={card as any} delay={i * 80} />
         ))}
         {/* Duplicate for infinite loop — static posters only, no Video.js */}
         {CARDS.map((card, i) => (
-          <BentoCard key={card.id + "-dup"} card={card} delay={i * 80} isDuplicate />
+          <BentoCard key={card.id + "-dup"} card={card as any} delay={i * 80} isDuplicate />
         ))}
       </div>
     </section>
@@ -235,7 +262,16 @@ function BentoCard({
   delay,
   isDuplicate = false,
 }: {
-  card: (typeof CARDS)[number];
+  card: {
+    id: string;
+    videoId?: string;
+    videoUrl?: string;
+    tag: string;
+    title: string;
+    body: string;
+    area: string;
+    gradient: boolean;
+  };
   delay: number;
   isDuplicate?: boolean;
 }) {
@@ -246,6 +282,8 @@ function BentoCard({
 
   useEffect(() => {
     if (isDuplicate) return;
+    if (!card.videoId) return; // Skip videojs for direct URLs
+    
     const videoEl = videoRef.current;
     if (!videoEl) return;
 
@@ -284,10 +322,17 @@ function BentoCard({
   // Pause/play on visibility
   useEffect(() => {
     if (isDuplicate) return;
+    if (card.videoUrl) {
+      if (videoRef.current) {
+         if (visible) videoRef.current.play().catch(() => {});
+      }
+      return;
+    }
+    
     const player = playerRef.current;
     if (!player) return;
     if (visible) player.play().catch(() => {});
-  }, [visible, isDuplicate]);
+  }, [visible, isDuplicate, card.videoUrl]);
 
   return (
     <div
@@ -307,7 +352,7 @@ function BentoCard({
         flexShrink: 0,
       }}
     >
-      {/* Video.js player / static poster for duplicates */}
+      {/* Video.js player / native player / static poster for duplicates */}
       <div
         style={{
           position: "absolute",
@@ -321,16 +366,39 @@ function BentoCard({
           <div style={{
             position: "absolute",
             inset: 0,
-            backgroundImage: `url(${cfPoster(card.videoId)})`,
+            backgroundImage: card.videoId ? `url(${cfPoster(card.videoId)})` : "none",
+            backgroundColor: "#000",
             backgroundSize: "cover",
             backgroundPosition: "center",
-          }} />
+          }}>
+            {card.videoUrl && (
+              <video
+                src={card.videoUrl}
+                muted
+                loop
+                playsInline
+                style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover"}}
+              />
+            )}
+          </div>
         ) : (
-          <video
-            ref={videoRef}
-            className="video-js"
-            playsInline
-          />
+          card.videoUrl ? (
+            <video
+              ref={videoRef}
+              src={card.videoUrl}
+              autoPlay
+              muted
+              loop
+              playsInline
+              style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover"}}
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              className="video-js"
+              playsInline
+            />
+          )
         )}
       </div>
 
@@ -449,3 +517,4 @@ function BentoCard({
     </div>
   );
 }
+
